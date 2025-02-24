@@ -1,32 +1,32 @@
 import socket
 import threading
 import time
-import argparse
+import sys
 from datetime import datetime
 
 class LoggingServer:
-    def __init__(self, port, logfile, rate_limit):
-        self.port = port
-        self.logfile = logfile
-        self.rate_limit = rate_limit  # Maximum logs per second per client
-        self.rate_window = 1  
-        self.log_format = "{timestamp} | {client_id} | {category} | {message}"  #  log format
-        self.client_rates = {}  # Track client message rate
+    def __init__(self, port, logFile, rateLimit):
+        self.port = int(port)
+        self.logFile = logFile
+        self.rateLimit = int(rateLimit)  # Maximum logs per second per client
+        self.rateWindow = 1  
+        self.logFormat = "{timeStamp} | {clientId} | {category} | {message}"  #  log format
+        self.clientRates = {}  # Track client message rate
         self.lock = threading.Lock()
-        self.file_lock = threading.Lock()
+        self.fileLock = threading.Lock()
 
     def start(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
             server.bind(('0.0.0.0', self.port))
             server.listen()
-            print(f"Logging server started on port {self.port}, writing logs to {self.logfile}")
+            print(f"Logging server started on port {self.port}, writing logs to {self.logFile}")
             while True:
                 conn, addr = server.accept()
                 print(f"Connected by {addr}")
-                client_thread = threading.Thread(target=self.handle_client, args=(conn, addr))
-                client_thread.start()
+                clientThread = threading.Thread(target=self.handleClient, args=(conn, addr))
+                clientThread.start()
 
-    def handle_client(self, conn, addr):
+    def handleClient(self, conn, addr):
         try:
             with conn:
                 file = conn.makefile('r')
@@ -40,51 +40,60 @@ class LoggingServer:
                         print(f"Invalid log message from {addr}")
                         continue
 
-                    client_id = parts[0].strip()
+                    clientId = parts[0].strip()
                     category = parts[1].strip()
                     message = parts[2].strip()
 
-                    if not client_id or not category or not message:
+                    if not clientId or not category or not message:
                         print(f"Missing fields from {addr}")
                         continue
 
                     # Rate limiting
-                    allowed = self.check_rate_limit(client_id)
+                    allowed = self.checkRateLimit(clientId)
                     if not allowed:
-                        print(f"Rate limit exceeded for client {client_id}")
+                        print(f"Rate limit exceeded for client {clientId}")
                         continue
 
                     # Log entry formatting
-                    timestamp = datetime.utcnow().isoformat()
-                    log_entry = self.log_format.format(
-                        timestamp=timestamp,
-                        client_id=client_id,
+                    timeStamp = datetime.utcnow().isoformat()
+                    logEntry = self.logFormat.format(
+                        timeStamp=timeStamp,
+                        clientId=clientId,
                         category=category,
                         message=message
                     )
 
                     # Save log entry to file
-                    with self.file_lock:
-                        with open(self.logfile, 'a') as file:
-                            file.write(log_entry + '\n')
+                    with self.fileLock:
+                        with open(self.logFile, 'a') as file:
+                            file.write(logEntry + '\n')
         except Exception as e:
             print(f"Error handling client {addr}: {e}")
 
-    def check_rate_limit(self, client_id):
+    def checkRateLimit(self, clientId):
         with self.lock:
-            current_time = time.time()
-            if client_id not in self.client_rates:
-                self.client_rates[client_id] = (current_time, 1)
+            currentTime = time.time()
+            if clientId not in self.clientRates:
+                self.clientRates[clientId] = (currentTime, 1)
                 return True
             else:
-                start_time, count = self.client_rates[client_id]
-                elapsed = current_time - start_time
-                if elapsed > self.rate_window:
-                    self.client_rates[client_id] = (current_time, 1)
+                startTime, count = self.clientRates[clientId]
+                elapsed = currentTime - startTime
+                if elapsed > self.rateWindow:
+                    self.clientRates[clientId] = (currentTime, 1)
                     return True
                 else:
-                    if count < self.rate_limit:
-                        self.client_rates[client_id] = (start_time, count + 1)
+                    if count < self.rateLimit:
+                        self.clientRates[clientId] = (startTime, count + 1)
                         return True
                     else:
                         return False
+
+if __name__ == "__main__":
+    if len(sys.argv) != 4:
+        print("Usage: python service.py <port> <logfile> <rate_limit>")
+        sys.exit(1)
+
+    
+    server = LoggingServer(sys.argv[1], sys.argv[2], sys.argv[3])
+    server.start()

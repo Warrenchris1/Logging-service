@@ -40,7 +40,9 @@ class LoggingServer:
                         print(f"Invalid log message from {addr}")
                         continue
 
-                    client_id, category, message = parts[0].strip(), parts[1].strip(), parts[2].strip()
+                    client_id = parts[0].strip()
+                    category = parts[1].strip()
+                    message = parts[2].strip()
 
                     if not client_id or not category or not message:
                         print(f"Missing fields from {addr}")
@@ -67,3 +69,22 @@ class LoggingServer:
                             file.write(log_entry + '\n')
         except Exception as e:
             print(f"Error handling client {addr}: {e}")
+
+    def check_rate_limit(self, client_id):
+        with self.lock:
+            current_time = time.time()
+            if client_id not in self.client_rates:
+                self.client_rates[client_id] = (current_time, 1)
+                return True
+            else:
+                start_time, count = self.client_rates[client_id]
+                elapsed = current_time - start_time
+                if elapsed > self.rate_window:
+                    self.client_rates[client_id] = (current_time, 1)
+                    return True
+                else:
+                    if count < self.rate_limit:
+                        self.client_rates[client_id] = (start_time, count + 1)
+                        return True
+                    else:
+                        return False

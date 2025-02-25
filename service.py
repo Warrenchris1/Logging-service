@@ -65,8 +65,8 @@ class LoggingServer:
 
                     # Save log entry to file
                     with self.fileLock:
-                        with open(self.logFile, 'a') as file:
-                            file.write(logEntry + '\n')
+                        with open(self.logFile, 'a') as logFilee:
+                            logFilee.write(logEntry + '\n')
         except Exception as e:
             print(f"Error handling client {addr}: {e}")
 

@@ -27,9 +27,19 @@ class LoggingServer:
                 clientThread.start()
 
     def handleClient(self, conn, addr):
+        clientId = f"{addr[0]}:{addr[1]}"
         try:
             with conn:
                 file = conn.makefile('r')
+                # This logs when the client connects
+                timeStamp = datetime.utcnow().isoformat()
+                connectionLog = self.logFormat.format(
+                    timeStamp=timeStamp,
+                    clientId=clientId,
+                    category="CONNECTED",
+                    message="Client has connected."
+                )
+                self.writeLog(connectionLog)
                 while True:
                     line = file.readline().strip()
                     if not line:
@@ -62,13 +72,30 @@ class LoggingServer:
                         category=category,
                         message=message
                     )
+                    self.writeLog(logEntry)
 
-                    # Save log entry to file
-                    with self.fileLock:
-                        with open(self.logFile, 'a') as logFilee:
-                            logFilee.write(logEntry + '\n')
+                    
         except Exception as e:
             print(f"Error handling client {addr}: {e}")
+
+        finally:
+            # This logs when the client disconnects
+            timeStamp = datetime.utcnow().isoformat()
+            disconnectionLog = self.logFormat.format(
+                timeStamp=timeStamp,
+                clientId=clientId,
+                category="DISCONNECTED",
+                message="Client has disconnected."
+            )
+            self.writeLog(disconnectionLog)
+            print(f"Client {clientId} disconnected.")
+
+    
+    def writeLog(self, logEntry):
+        with self.fileLock:
+            with open(self.logFile, 'a') as logFilee:
+                logFilee.write(logEntry + '\n')
+
 
     def checkRateLimit(self, clientId):
         with self.lock:

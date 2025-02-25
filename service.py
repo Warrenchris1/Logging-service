@@ -2,7 +2,7 @@
 *   FILE          : service.py
 *   PROJECT       : Logging Service - A3
 *   PROGRAMMER    : Warren, Ahmed
-*   FIRST VERSION : 01/31/2025
+*   FIRST VERSION : 02/23/2025
 *   DESCRIPTION   :
 *      This file is for the logging service. It handles client connections, logs messages to a file, and enforces rate limiting to prevent abuse.
 """

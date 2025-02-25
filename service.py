@@ -1,3 +1,12 @@
+"""
+*   FILE          : service.py
+*   PROJECT       : Logging Service - A3
+*   PROGRAMMER    : Warren, Ahmed
+*   FIRST VERSION : 01/31/2025
+*   DESCRIPTION   :
+*      This file is for the logging service. It handles client connections, logs messages to a file, and enforces rate limiting to prevent abuse.
+"""
+
 import socket
 import threading
 import time
@@ -5,6 +14,16 @@ import sys
 from datetime import datetime
 
 class LoggingServer:
+
+    """
+        *  Function  : __init__()
+        *  Summary   : Initializes the logging server with port, log file, and rate limit settings.
+        *  Params    :
+        *     port (int)          
+        *     logFile (str)       
+        *     rateLimit (int)     
+        *  Return    : None.
+    """
     def __init__(self, port, logFile, rateLimit):
         self.port = int(port)
         self.logFile = logFile
@@ -14,7 +33,13 @@ class LoggingServer:
         self.clientRates = {}  # Track client message rate
         self.lock = threading.Lock()
         self.fileLock = threading.Lock()
-
+    
+    """
+        *  Function  : start()
+        *  Summary   : Starts the logging server and listens for incoming client connections.
+        *  Params    : None.
+        *  Return    : None.
+    """
     def start(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
             server.bind(('0.0.0.0', self.port))
@@ -26,6 +51,14 @@ class LoggingServer:
                 clientThread = threading.Thread(target=self.handleClient, args=(conn, addr))
                 clientThread.start()
 
+    """
+        *  Function  : handleClient()
+        *  Summary   : Handles an individual client connection, reading and logging messages.
+        *  Params    :
+        *     conn (socket) 
+        *     addr   
+        *  Return    : None.
+    """
     def handleClient(self, conn, addr):
         clientId = f"{addr[0]}:{addr[1]}"
         try:
@@ -91,12 +124,26 @@ class LoggingServer:
             print(f"Client {clientId} disconnected.")
 
     
+    """
+        *  Function  : writeLog()
+        *  Summary   : Writes a log entry to the log file.
+        *  Params    :
+        *     logEntry 
+        *  Return    : None.
+    """
     def writeLog(self, logEntry):
         with self.fileLock:
             with open(self.logFile, 'a') as logFilee:
                 logFilee.write(logEntry + '\n')
 
-
+    """
+        *  Function  : checkRateLimit()
+        *  Summary   : Checks if a client has exceeded the rate limit for logging.
+        *  Params    :
+        *     clientId 
+        *  Return    :
+        *     bool : True if the client is allowed to log, False if rate limit is exceeded.
+        """
     def checkRateLimit(self, clientId):
         with self.lock:
             currentTime = time.time()

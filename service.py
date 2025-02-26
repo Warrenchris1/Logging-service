@@ -24,11 +24,12 @@ class LoggingServer:
         *     rateLimit (int)     
         *  Return    : None.
     """
-    def __init__(self, port, logFile, rateLimit):
+    def __init__(self, port, logFile, rateLimit, ipAddress):
         self.port = int(port)
+        self.ipAddress = ipAddress
         self.logFile = logFile
         self.rateLimit = int(rateLimit)  # Maximum logs per second per client
-        self.rateWindow = 1  
+        self.rateWindow = 10  
         self.logFormat = "{timeStamp} | {clientId} | {category} | {message}"  #  log format
         self.clientRates = {}  # Track client message rate
         self.lock = threading.Lock()
@@ -42,7 +43,7 @@ class LoggingServer:
     """
     def start(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-            server.bind(('10.0.0.31', self.port))
+            server.bind((self.ipAddress, self.port))
             server.listen()
             print(f"Logging server started on port {self.port}, writing logs to {self.logFile}")
             while True:
@@ -147,10 +148,10 @@ class LoggingServer:
                         return False
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python service.py <port> <logfile> <rate_limit>")
+    if len(sys.argv) != 5:
+        print("Usage: python service.py <port> <logfile> <rate_limit> <ip>")
         sys.exit(1)
 
     
-    server = LoggingServer(sys.argv[1], sys.argv[2], sys.argv[3])
+    server = LoggingServer(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     server.start()

@@ -1,4 +1,0 @@
-2025-02-26T00:07:11.843535 | TestingClient | Notice | This entry is logging a notice.
-2025-02-26T00:07:11.843535 | TestingClient | Error | This entry is logging an error message.
-2025-02-26T00:07:11.843535 | TestingClient | Warning | This entry is logging a warning.
-2025-02-26T00:07:11.843535 | TestingClient | Critical | This entry is logging a critical message.

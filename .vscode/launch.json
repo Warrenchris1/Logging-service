@@ -12,7 +12,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "13000", "car.txt", "100"
+                "13000", "car.txt", "10"
             ]
         }
     ]

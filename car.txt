@@ -1,8 +1,4 @@
-2025-02-25T03:16:59.714078 | ID1 | war | 111.
-2025-02-25T03:17:03.981861 | ID1 | war | 121.
-2025-02-25T03:17:07.591949 | ID1 | war | 131.
-2025-02-25T03:17:44.905083 | TestingClient | Critical | This entry is logging a critical message.
-2025-02-25T03:17:44.905083 | TestingClient | Error | This entry is logging an error message.
-2025-02-25T03:17:44.911942 | TestingClient | Warning | This entry is logging a warning.
-2025-02-25T03:17:44.917560 | TestingClient | Notice | This entry is logging a notice.
-2025-02-25T03:17:44.921867 | TestingClient | Notice | This entry is logging a message that is too long bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla.
+2025-02-26T00:07:11.843535 | TestingClient | Notice | This entry is logging a notice.
+2025-02-26T00:07:11.843535 | TestingClient | Error | This entry is logging an error message.
+2025-02-26T00:07:11.843535 | TestingClient | Warning | This entry is logging a warning.
+2025-02-26T00:07:11.843535 | TestingClient | Critical | This entry is logging a critical message.

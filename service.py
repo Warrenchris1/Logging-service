@@ -42,7 +42,7 @@ class LoggingServer:
     """
     def start(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-            server.bind(('0.0.0.0', self.port))
+            server.bind(('10.0.0.31', self.port))
             server.listen()
             print(f"Logging server started on port {self.port}, writing logs to {self.logFile}")
             while True:
@@ -64,15 +64,6 @@ class LoggingServer:
         try:
             with conn:
                 file = conn.makefile('r')
-                # This logs when the client connects
-                timeStamp = datetime.utcnow().isoformat()
-                connectionLog = self.logFormat.format(
-                    timeStamp=timeStamp,
-                    clientId=clientId,
-                    category="CONNECTED",
-                    message="Client has connected."
-                )
-                self.writeLog(connectionLog)
                 while True:
                     line = file.readline().strip()
                     if not line:
@@ -89,6 +80,11 @@ class LoggingServer:
 
                     if not clientId or not category or not message:
                         print(f"Missing fields from {addr}")
+                        continue
+
+                    # Message size limit
+                    if len(line) > 320:
+                        print(f"log message is too long. from {addr}")
                         continue
 
                     # Rate limiting
@@ -110,19 +106,6 @@ class LoggingServer:
                     
         except Exception as e:
             print(f"Error handling client {addr}: {e}")
-
-        finally:
-            # This logs when the client disconnects
-            timeStamp = datetime.utcnow().isoformat()
-            disconnectionLog = self.logFormat.format(
-                timeStamp=timeStamp,
-                clientId=clientId,
-                category="DISCONNECTED",
-                message="Client has disconnected."
-            )
-            self.writeLog(disconnectionLog)
-            print(f"Client {clientId} disconnected.")
-
     
     """
         *  Function  : writeLog()
